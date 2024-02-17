@@ -1,0 +1,55 @@
+// ==UserScript==
+// @name         Price Modifier
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  Modifies the displayed buyorder price by multiplying it by 0.87
+// @author       LazySolitude
+// @match        https://steamcommunity.com/market/listings*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // Function to modify the price
+    function modifyPrice() {
+        // Find the element containing the price and requests
+        var buyRequestsElement = document.getElementById('market_commodity_buyrequests');
+
+        if (buyRequestsElement) {
+            // Find all elements containing the price
+            var priceElements = buyRequestsElement.querySelectorAll('.market_commodity_orders_header_promote');
+
+            if (priceElements.length >= 2) { // Ensure there are at least two price elements
+                // Extract the second price element
+                var originalPriceElement = priceElements[1];
+
+                // Check if the price has already been modified
+                if (!originalPriceElement.getAttribute('data-modified')) {
+                    // Extract the original price value and convert it to a number
+                    var originalPriceText = originalPriceElement.textContent.trim();
+                    var originalPrice = parseFloat(originalPriceText.replace(/[^0-9.,]/g, '').replace(',', '.')); // Extract numeric value, replace comma with dot for decimals
+
+                    // Modify the price by multiplying it by 0.87
+                    var modifiedPrice = (originalPrice * 0.87).toFixed(2) + '€'; // Round to 2 decimal places and add the currency symbol
+
+                    // Create a new element to display the modified price
+                    var modifiedPriceBox = document.createElement('div');
+                    modifiedPriceBox.textContent = 'Buyder after fees Price: ' + modifiedPrice;
+
+                    // Find the parent div to insert the modified price box
+                    var marketBuyOrderInfo = document.getElementById('market_buyorder_info');
+
+                    // Append the modified price box to the parent div
+                    marketBuyOrderInfo.appendChild(modifiedPriceBox);
+
+                    // Mark the original price element as modified
+                    originalPriceElement.setAttribute('data-modified', true);
+                }
+            }
+        }
+    }
+
+    // Call the modifyPrice function after a delay of 6 seconds
+    setTimeout(modifyPrice, 6000);
+})();
