@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Price Modifier
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Modifies the displayed buyorder price by multiplying it by 0.87
-// @author       LazySolitude
+// @author       16546489
 // @match        https://steamcommunity.com/market/listings*
 // @grant        none
 // ==/UserScript==
@@ -15,6 +15,7 @@
     function modifyPrice() {
         // Find the element containing the price and requests
         var buyRequestsElement = document.getElementById('market_commodity_buyrequests');
+        var ordersBlock = document.querySelectorAll('.market_commodity_orders_block');
 
         if (buyRequestsElement) {
             // Find all elements containing the price
@@ -35,13 +36,20 @@
 
                     // Create a new element to display the modified price
                     var modifiedPriceBox = document.createElement('div');
-                    modifiedPriceBox.textContent = 'Buyder after fees Price: ' + modifiedPrice;
+                    modifiedPriceBox.textContent = 'Buyorder after fees Price: ' + modifiedPrice;
 
                     // Find the parent div to insert the modified price box
-                    var marketBuyOrderInfo = document.getElementById('market_buyorder_info');
+                    var parentElement;
+                    if (ordersBlock.length >= 2) {
+                        // If there are multiple blocks, use the second one
+                        parentElement = ordersBlock[1].querySelector('.market_commodity_orders_header');
+                    } else {
+                        // If there's no block, default to appending to #market_buyorder_info
+                        parentElement = document.getElementById('market_buyorder_info');
+                    }
 
                     // Append the modified price box to the parent div
-                    marketBuyOrderInfo.appendChild(modifiedPriceBox);
+                    parentElement.appendChild(modifiedPriceBox);
 
                     // Mark the original price element as modified
                     originalPriceElement.setAttribute('data-modified', true);
