@@ -1,40 +1,15 @@
 // ==UserScript==
-// @name         Bp.tf links on mannco
+// @name         Backpack.tf links on mannco
 // @namespace    http://tampermonkey.net/
-// @version      2024-02-18 
-// @description  Backpack.tf links on mannco. 
-// @author       16546489 
+// @version      2024-02-18
+// @description  Backpack.tf links on mannco.
+// @author       16546489
 // @match        https://mannco.store/item/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=mannco.store
 // @grant        none
 // ==/UserScript==
 
-// - This Script is for Tampermonkey - version: 0.1
-var itemInfo = document.getElementsByClassName("item-info")[0];
-var itemName = itemInfo.parentElement.querySelector(".card-item").querySelector(".item-name"
-	).querySelector("span").innerText;
-var quality = itemInfo.querySelector("dd").innerText
-var unuEffect;var craft = "Craftable";var fixedName;
-var excpList = ["The Value of Teamwork", "The Athletic Supporter"]
-const pattern = /\b(?:Normal |Unique |Vintage |Genuine |Strange |Unusual |Haunted |Collector's |Decorated |Community |Uncraftable )\b/g;
-fixedName = itemName.replace(pattern, "");
-
-if (!itemName.includes("Taunt") && !excpList.includes(fixedName)) {
-	fixedName = fixedName.replace(/^The /g, "");
-}
-if (itemName.includes("Uncraftable")) {
-	craft = "Non-Craftable";
-}
-if (quality == "Unusual") {
-	unuEffect = document.getElementsByClassName("card-item")[0].querySelector(".item-name"
-		).textContent.split("★ ")[1].split("Strange")[0].split("Unusual")[0].trim();
-} if (itemName.includes("Strange") && quality != "Strange") {
-	quality = "Strange " + quality;
-} if (itemName.includes("Strange Part")) {
-	quality = "Unique";
-	fixedName = "Strange " + fixedName;
-}
-
+// List of effects
 var effects = {
   "Particle 1": 1,
   "Flying Bits": 2,
@@ -474,81 +449,113 @@ var effects = {
   'Arctic Delight': 3141,
   'Winning Spirit': 3142,
   'Petal Prance': 3143
+};
+
+// Function to get the effect ID from the effects list
+function getEffectID(effectName) {
+    return effects[effectName] || null;
 }
 
-var qualityID = "";
-
-console.log("--- logging ---");
-console.log("Name: ", fixedName);
-console.log("Quality: ", quality);
-console.log("Effect: ", unuEffect);
-console.log("-end-");
-
-function getEffectID(q) {
-	if (!quality.includes("Unusual")) {return}
-	qualityID = effects[q];
+// Function to extract item information
+function extractItemInfo() {
+    var itemInfo = document.querySelector(".item-info__container");
+    var itemNameElement = itemInfo.querySelector(".item-info__name");
+    var itemName = itemNameElement ? itemNameElement.innerText.trim() : "";
+    var qualityElement = itemInfo.querySelector("dd");
+    var quality = qualityElement ? qualityElement.innerText.trim() : "";
+    return { itemName, quality };
 }
 
-function openURL(name, qName, qID) {
-	window.open(`https://backpack.tf/stats/${qName}/${name}/Tradable/${craft}/${qID}`, "_blank");
+// Function to open Backpack.tf stats in a new tab for every item except unusuals
+function openBackpackStats(itemName, quality) {
+    // Remove "The" or "the" from the item name if it exists
+    itemName = itemName.replace(/^the /i, "");
+
+    // Remove "Uncraftable" from the item name if it exists
+    itemName = itemName.replace(/uncraftable/i, "").trim();
+
+    // Extract the quality from the item name
+    var qualityMatch = itemName.match(/(\w+ Collector's|\bStrange\b|\bVintage\b|\bGenuine\b|\bUnique\b|\bHaunted\b|\bSelf-Made\b)/i);
+    if (qualityMatch) {
+        quality = qualityMatch[0];
+        // Remove the matched quality from the item name
+        itemName = itemName.replace(qualityMatch[0], "").trim();
+    }
+
+    var craftableElement = [...document.querySelectorAll(".item-info__list dt")].find(dt => dt.textContent.trim() === "Craftable");
+    var craftable = craftableElement ? craftableElement.nextElementSibling.textContent.trim() : "";
+    craftable = craftable.toLowerCase().includes("yes") ? "Craftable" : "Non-Craftable";
+
+    // Extracting the effect name from the item name
+    var effectMatch = itemName.match(/★\s*(.*?)\s*Unusual/i);
+    var effect = effectMatch ? effectMatch[1] : null;
+
+    if (effect) {
+        // If it's an unusual item, use the second script logic
+        openBackpackStatsForUnusual(itemName, quality);
+    } else {
+        // For all other items, use the first script logic
+        var url = `https://backpack.tf/stats/${quality}/${itemName}/Tradable/${craftable}`;
+        window.open(url, "_blank"); // Open in new tab
+    }
 }
 
+// Function to open Backpack.tf stats in a new tab for unusual items
+function openBackpackStatsForUnusual(itemName, quality) {
+    // Remove "The" or "the" from the item name if it exists
+    itemName = itemName.replace(/^the /i, "").replace(/^the /i, "");
 
+    // Remove "Uncraftable" from the item name if it exists
+    itemName = itemName.replace(/uncraftable/i, "").trim();
 
-function begin() {
-    var div = document.getElementById("page-sidebar");
+    var craftableElement = [...document.querySelectorAll(".item-info__list dt")].find(dt => dt.textContent.trim() === "Craftable");
+    var craftable = craftableElement ? craftableElement.nextElementSibling.textContent.trim() : "";
+    craftable = craftable.toLowerCase().includes("yes") ? "Craftable" : "Non-Craftable";
+
+    // Extracting the effect name from the item name
+    var effectMatch = itemName.match(/★\s*(.*?)\s*Unusual/i);
+    var effect = effectMatch ? effectMatch[1] : null;
+
+    if (effect) {
+        // Remove the effect name and "Unusual" tag from the item name
+        itemName = itemName.replace(effectMatch[0], "").replace("Unusual", "").trim();
+        var effectID = getEffectID(effect);
+        var url = `https://backpack.tf/stats/${quality}/${itemName}/Tradable/${craftable}/${effectID}`;
+        window.open(url, "_blank"); // Open in new tab
+    }
+}
+
+// Function to create and style the info box
+function createInfoBox() {
+    var box = document.createElement("div");
+    box.style.position = "fixed";
+    box.style.top = "170px";
+    box.style.left = "20px";
+    return box;
+}
+
+// Function to append the info box to the body
+function appendInfoBox(box) {
     var btnStats = document.createElement("button");
+    btnStats.id = "btnStats";
     btnStats.textContent = "Backpack.tf Stats";
-    btnStats.style.color = "white";
-    btnStats.style.backgroundColor = "#42445b";
-    btnStats.style.border = "none";
+    btnStats.style.padding = "5px 10px";
     btnStats.style.borderRadius = "5px";
-    btnStats.style.marginTop = "-25px";
-    btnStats.style.marginLeft = "10px"; // Adjust the margin as needed
-
-    // Function to handle both regular clicks and scroll clicks
-    function handleButtonClick(event) {
-        // Check if it's a regular left-click or a scroll click (middle mouse button)
-        if (event.button === 0 || event.button === 1) {
-            openURL(fixedName, quality, qualityID);
-        }
-    }
-
-    // Add event listeners for both click and mousedown events
-    btnStats.addEventListener("click", handleButtonClick);
-    btnStats.addEventListener("mousedown", handleButtonClick);
-
-    div.prepend(btnStats);
-
-    if (window.location.href.split("/")[5]) {
-        let link = window.location.href.replace(window.location.href.split("/")[5], "");
-        var btnSPage = document.createElement("button");
-        btnSPage.textContent = "Store Page";
-        btnSPage.style.color = "white";
-        btnSPage.style.backgroundColor = "#42445b";
-        btnSPage.style.border = "none";
-        btnSPage.style.borderRadius = "5px";
-        btnSPage.style.marginTop = "-25px";
-        btnSPage.style.marginLeft = "90px"; // Adjust the margin as needed
-
-        // Function to handle both regular clicks and scroll clicks for the Store Page button
-        function handleStorePageButtonClick(event) {
-            // Check if it's a regular left-click or a scroll click (middle mouse button)
-            if (event.button === 0 || event.button === 1) {
-                openURL("store_page", link);
-            }
-        }
-
-        // Add event listeners for both click and mousedown events for the Store Page button
-        btnSPage.addEventListener("click", handleStorePageButtonClick);
-        btnSPage.addEventListener("mousedown", handleStorePageButtonClick);
-
-        div.insertBefore(btnSPage, btnStats.nextSibling);
-    }
+    btnStats.style.backgroundColor = "#007bff";
+    btnStats.style.color = "#fff";
+    btnStats.onclick = function() {
+        var { itemName, quality } = extractItemInfo();
+        openBackpackStats(itemName, quality);
+    };
+    box.appendChild(btnStats);
+    document.body.appendChild(box);
 }
 
+// Main function to initialize the script
+function main() {
+    var infoBox = createInfoBox();
+    appendInfoBox(infoBox);
+}
 
-setTimeout(() => {
-	getEffectID(unuEffect);
-	begin();
-}, 500); // Change this to "1000" or "2500" if the page loads slowly.
+// Execute main function
+main();
