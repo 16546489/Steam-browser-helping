@@ -46,7 +46,11 @@
         button.style.marginTop = '10px';
         button.addEventListener('click', onButtonClick);
         // Allow middle mouse button click to open in a new tab
-        button.addEventListener('auxclick', onButtonClick);
+        button.addEventListener('mousedown', function(event) {
+            if (event.button === 1) { // Check if it's the middle mouse button
+                onButtonClick(event);
+            }
+        });
         let marketActions = document.querySelector('.market_listing_right_cell.market_listing_action_buttons');
         marketActions.appendChild(button);
     }
