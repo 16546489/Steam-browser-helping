@@ -4,7 +4,7 @@
 // @version      0.1
 // @description  Add a button to navigate from Steam Market to backpack.tf for specific items
 // @author       16546489
-// @match        https://steamcommunity.com/market/listings/*
+// @match        https://steamcommunity.com/market/listings/440/*
 // @grant        none
 // ==/UserScript==
 
