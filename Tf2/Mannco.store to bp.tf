@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Backpack.tf links from mannco
+// @name         Mannco.store to bp.tf
 // @namespace    http://tampermonkey.net/
 // @version      2024-02-18
 // @description  Backpack.tf links on mannco.
