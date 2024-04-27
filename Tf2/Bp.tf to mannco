@@ -4,8 +4,7 @@
 // @version      0.1
 // @description  Adds a price box for Mannco.store items on a trading website.
 // @author       16546489
-// @include      /^https?:\/\/backpack\.tf\/.*
-// @require      https://code.jquery.com/jquery-3.6.0.min.js
+// @include      /^https://backpack.tf/stats\/.*
 // @grant        none
 // ==/UserScript==
 
