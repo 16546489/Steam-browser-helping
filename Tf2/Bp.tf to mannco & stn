@@ -523,7 +523,7 @@ var effects = {
     }
 
     // Call the function to add the Mannco.store price box
-    addMarketplaceButton();
+    addManncoButton();
     addStnButton()
 
 })();
