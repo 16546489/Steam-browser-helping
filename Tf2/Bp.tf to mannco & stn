@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Mannco.store Price Box
+// @name         Bp.tf to mannco & stn
 // @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  Adds a price box for Mannco.store items on a trading website.
+// @version      0.2
+// @description  Adds a price box for Mannco.store and STN.trading items on the bp.tf trading website.
 // @author       16546489
 // @include      /^https://backpack.tf/stats\/.*
 // @grant        none
@@ -459,7 +459,7 @@ var effects = {
     }
 
     // Function to add the Mannco.store price box
-    function addMarketplaceButton() {
+    function addManncoButton() {
         var itemElement = document.evaluate("/html/body/main/div[1]/div[1]/div[2]/div[1]/div[1]/div[2]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
         var itemName = itemElement.innerText.trim();
 
@@ -479,6 +479,10 @@ var effects = {
         if (effectName !== "") {
             formattedItemName = formattedItemName.replace(formattedEffectName, formattedEffectName + '-unusual');
         }
+	
+	formattedItemName = formattedItemName.replace("(", "");
+	formattedItemName = formattedItemName.replace(")", "");
+	formattedItemName = formattedItemName.replace(".", "");
 
         // Check if the price box already exists
         var manncoElement = $('a[href*="manncostore.com"]')[0];  // Adjust this selector according to your website's structure
@@ -494,7 +498,32 @@ var effects = {
         }
     }
 
+    function addStnButton() {
+        var itemElement = document.evaluate("/html/body/main/div[1]/div[1]/div[2]/div[1]/div[1]/div[2]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        var itemName = itemElement.innerText.trim();
+
+        // Check if the item name contains any of the effects
+        var effectName = "";
+        for (var effect in effects) {
+            if (itemName.includes(effect)) {
+                itemName = "Unusual%20"+itemName;
+                break;
+            }
+        }
+        // Check if the price box already exists
+        $(".price-boxes").append(
+        `<a class="price-box" href="https://stntrading.eu/item/tf2/${itemName}" target="_blank" data-tip="top" data-original-title="STN">
+              <img src="https://avatars.cloudflare.steamstatic.com/11c64ac66ae14fdba06d7c6d1463eaa79b26468d_full.jpg" alt="stn">
+              <div class="text" style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 0;">
+                  <div class="value" style="font-size: 14px;">STN</div>
+              </div>
+          </a>`
+    );
+
+    }
+
     // Call the function to add the Mannco.store price box
     addMarketplaceButton();
+    addStnButton()
 
 })();
